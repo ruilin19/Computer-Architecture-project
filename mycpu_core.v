@@ -31,9 +31,9 @@ module mycpu_core(
     wire [`DATA_SRAM_WD-1:0] ex_dt_sram_bus;
     wire [`WB_TO_RF_WD-1:0] wb_to_rf_bus;
     wire [`StallBus-1:0] stall;
-    wire is_indelayslot_id_in;
-    wire is_indelayslot_id_out;
-    wire next_is_indelayslot;
+//    wire is_indelayslot_id_in;
+//    wire is_indelayslot_id_out;
+//    wire next_is_indelayslot;
     wire id_stall;//id段暂停信号
     wire ex_stall;//ex段暂停信号
     wire [5:0] ex_aluop;
@@ -63,9 +63,9 @@ module mycpu_core(
         .wb_to_rf_bus    (wb_to_rf_bus    ),
         .id_to_ex_bus    (id_to_ex_bus    ),
         .br_bus          (br_bus          ),
-        .is_indelayslot_o (is_indelayslot_id_out),//告诉exe这条指令位于延迟槽
-        .next_is_indelayslot(next_is_indelayslot),//告诉exe下一条指令位于延迟槽
-        .is_indelayslot_i (is_indelayslot_id_in),//exe回传给id下一条条指令位于延迟槽
+//        .is_indelayslot_o (is_indelayslot_id_out),//告诉exe这条指令位于延迟槽
+//        .next_is_indelayslot(next_is_indelayslot),//告诉exe下一条指令位于延迟槽
+//        .is_indelayslot_i (is_indelayslot_id_in),//exe回传给id下一条条指令位于延迟槽
         .stallreq_id(id_stall),
         .ex_aluop (ex_aluop),
         .ex_addr  (ex_raddr)
@@ -81,9 +81,9 @@ module mycpu_core(
         .data_sram_wen   (data_sram_wen   ),
         .data_sram_addr  (data_sram_addr  ),
         .data_sram_wdata (data_sram_wdata ),
-        .is_indelayslot_i (is_indelayslot_id_out),//告诉exe这条指令是否位于延迟槽
-        .is_next_indelayslot_id_i (next_is_indelayslot),//告诉exe下一条指令位于延迟槽
-        .is_next_indelayslot_id_o (is_indelayslot_id_in),//回传给id下一条指令位于延迟槽
+//        .is_indelayslot_i (is_indelayslot_id_out),//告诉exe这条指令是否位于延迟槽
+//        .is_next_indelayslot_id_i (next_is_indelayslot),//告诉exe下一条指令位于延迟槽
+//        .is_next_indelayslot_id_o (is_indelayslot_id_in),//回传给id下一条指令位于延迟槽
         .stall_ex                   (ex_stall),
         .ex_aluop_o                 (ex_aluop),
         .ex_addr_o                  (ex_raddr)

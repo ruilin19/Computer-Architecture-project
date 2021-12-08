@@ -13,9 +13,9 @@ module EX(
     output wire [3:0] data_sram_wen,
     output wire [31:0] data_sram_addr,
     output wire [31:0] data_sram_wdata,
-    input wire is_indelayslot_i,
-    input wire is_next_indelayslot_id_i,
-    output wire is_next_indelayslot_id_o,
+//    input wire is_indelayslot_i,
+//    input wire is_next_indelayslot_id_i,
+//    output wire is_next_indelayslot_id_o,
     output wire stall_ex,//ex段暂停信号
     output wire [5:0]ex_aluop_o,
     output wire [4:0]ex_addr_o
@@ -50,9 +50,9 @@ module EX(
     wire [4:0] rf_waddr;//寄存器的位置
     wire sel_rf_res;//选择的结果
     wire [31:0] rf_rdata1, rf_rdata2;//从寄存器中读入的数据
-    wire [31:0] ex_save_inst;//要保存的指令
-    wire [31:0] pc_plus_8;
-    assign is_next_indelayslot_id_o=is_next_indelayslot_id_i;
+//    wire [31:0] ex_save_inst;//要保存的指令
+//    wire [31:0] pc_plus_8;
+//    assign is_next_indelayslot_id_o=is_next_indelayslot_id_i;
     assign pc_plus_8=ex_pc+32'h8;
     assign ex_aluop_o=inst[31:26];
     assign ex_addr_o =rf_waddr;
@@ -92,14 +92,15 @@ module EX(
         .alu_src2    (alu_src2    ),
         .alu_result  (alu_result  )
     );
-    assign ex_save_inst=(alu_op==12'd0)?pc_plus_8:32'd0;
-    assign ex_result =rf_we&(rf_waddr==32'd31)?ex_save_inst: alu_result;//ALU计算结果
+//    assign ex_save_inst=(alu_op==12'd0)?pc_plus_8:32'd0;
+//    assign ex_result =rf_we&(rf_waddr==32'd31)?ex_save_inst: alu_result;//ALU计算结果
+    assign ex_result = alu_result;
     assign data_sram_en=data_ram_en;
     assign data_sram_wen=data_ram_wen;
     assign data_sram_addr=data_ram_en?ex_result:32'd0;
     assign data_sram_wdata=(data_ram_wen==4'b0001)?rf_rdata2:
-          (data_ram_wen==4'b0011)?rf_rdata2:
-          (data_ram_wen==4'b1111)?rf_rdata2:32'd0;
+                           (data_ram_wen==4'b0011)?rf_rdata2:
+                           (data_ram_wen==4'b1111)?rf_rdata2:32'd0;
     wire [5:0] ld_type_o;
     assign ld_type_o=inst[31:26];
     assign ex_to_mem_bus = {
