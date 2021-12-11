@@ -30,5 +30,5 @@
 效果：通过pass point64\
 分工：\
 王睿麟：负责上述任务在ID.v和EX.v的工作\
-吕原汇一：负责上述任务在在IF.v、MEM.v和WB.v的工作\
-李尚儒：负责上述任务在CTRL.v、mycpu_top.v和regfile.v的工作\
+吕原汇一：负责上述任务在在MEM.v和WB.v的工作\
+李尚儒：负责上述任务在CTRL.v和regfile.v的工作\
