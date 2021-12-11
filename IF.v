@@ -7,16 +7,16 @@ module IF(
     // input wire flush,
     // input wire [31:0] new_pc,
 
-    input wire [`BR_WD-1:0] br_bus,//Ìø×ªbus
+    input wire [`BR_WD-1:0] br_bus,//è·³è½¬bus
     output wire [`IF_TO_ID_WD-1:0] if_to_id_bus,
     output wire inst_sram_en,
     output wire [3:0] inst_sram_wen,
     output wire [31:0] inst_sram_addr,
     output wire [31:0] inst_sram_wdata
 );
-    reg [31:0] pc_reg;//Ö¸Áî¼Ä´æÆ÷
+    reg [31:0] pc_reg;//æŒ‡ä»¤å¯„å­˜å™¨
     reg ce_reg;
-    wire [31:0] next_pc;//NPC¼Ä´æÆ÷
+    wire [31:0] next_pc;//NPCå¯„å­˜å™¨
     wire br_e;
     wire [31:0] br_addr;
     //
@@ -28,24 +28,25 @@ module IF(
 
     always @ (posedge clk) begin
         if (rst) begin
-            pc_reg <= 32'hbfbf_fffc;//±»½ûÓÃµÄÊ±ºò PCÎªÄ³Ò»¶¨Öµ
+            pc_reg <= 32'hbfbf_fffc;//è¢«ç¦ç”¨çš„æ—¶å€™ PCä¸ºæŸä¸€å®šå€¼
         end
         else if (stall[0]==`NoStop) begin
-            pc_reg <= next_pc;//´æ´¢Æ÷¿ÉÒÔÊ¹ÓÃ PC¼Ä´æÆ÷ÓëNPC¼Ä´æÆ÷Á¬Ïß
+            pc_reg <= next_pc;//å­˜å‚¨å™¨å¯ä»¥ä½¿ç”¨ PCå¯„å­˜å™¨ä¸ŽNPCå¯„å­˜å™¨è¿žçº¿
         end
+        
     end
     always @ (posedge clk) begin
         if (rst) begin
-            ce_reg <= 1'b0;//¸´Î»£¬Ö¸Áî¼Ä´æÆ÷½ûÓÃ
+            ce_reg <= 1'b0;//å¤ä½ï¼ŒæŒ‡ä»¤å¯„å­˜å™¨ç¦ç”¨
         end
         else if (stall[0]==`NoStop) begin
-            ce_reg <= 1'b1;  //¸´Î»½áÊøÖ¸Áî¼Ä´æÆ÷¿ÉÒÔÊ¹ÓÃ
+            ce_reg <= 1'b1;  //å¤ä½ç»“æŸæŒ‡ä»¤å¯„å­˜å™¨å¯ä»¥ä½¿ç”¨
         end
     end
 
 
     assign next_pc = br_e ? br_addr 
-                   : pc_reg + 32'h4;//Ö»ÓÐ·ÖÖ§Ê¹ÄÜÊ± npcÎª×ÜÏß´«À´µÄµØÖ· ·ñÔòÎªµ±Ç°pc+4µÄµØÖ·
+                   : pc_reg + 32'h4;//åªæœ‰åˆ†æ”¯ä½¿èƒ½æ—¶ npcä¸ºæ€»çº¿ä¼ æ¥çš„åœ°å€ å¦åˆ™ä¸ºå½“å‰pc+4çš„åœ°å€
 
     assign inst_sram_en = ce_reg;
     assign inst_sram_wen = 4'b0;
