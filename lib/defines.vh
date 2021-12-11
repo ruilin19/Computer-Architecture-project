@@ -1,12 +1,28 @@
 `define IF_TO_ID_WD 33
-`define ID_TO_EX_WD 159
-`define EX_TO_MEM_WD 82
-`define EX_TO_ID_WD 38//
-`define MEM_TO_ID_WD 38//
-`define MEM_TO_WB_WD 70
+`define ID_TO_EX_WD 226
+//`define EX_TO_MEM_WD 116
+`define EX_TO_MEM_WD 151
+//`define EX_TO_ID_WD 72//
+`define EX_TO_ID_WD 105//
+//`define MEM_TO_ID_WD 72//
+`define MEM_TO_ID_WD 105
+//`define MEM_TO_WB_WD 104
+`define MEM_TO_WB_WD 137
 `define BR_WD 33
 `define DATA_SRAM_WD 69
-`define WB_TO_RF_WD 38
+`define WB_TO_RF_WD 137
 `define StallBus 6
 `define NoStop 1'b0
 `define Stop 1'b1
+`define ZeroWord 32'b0
+
+//³ý·¨div
+`define DivFree 2'b00
+`define DivByZero 2'b01
+`define DivOn 2'b10
+`define DivEnd 2'b11
+`define DivResultReady 1'b1
+`define DivResultNotReady 1'b0
+`define DivStart 1'b1
+`define DivStop 1'b0
+// 2021-11-29 add
