@@ -66,7 +66,7 @@ module EX(
 //    wire [31:0] ex_save_inst;//要保存的指令
 //    wire [31:0] pc_plus_8;
 //    assign is_next_indelayslot_id_o=is_next_indelayslot_id_i;
-    assign pc_plus_8=ex_pc+32'h8;
+//    assign pc_plus_8=ex_pc+32'h8;
     assign ex_aluop_o=inst[31:26];
     assign ex_addr_o =rf_waddr;
     assign {
@@ -154,23 +154,118 @@ module EX(
         rf_waddr,       // 36:32
         ex_result       // 31:0
     };
-    //乘法部分
+    assign stall_ex = stallreq_for_div|stallreq_for_mul;
+//    乘法部分
+//    wire [63:0] mul_result_p;
+//    wire inst_mult_p;
+//    wire inst_multu_p;
+//    wire mul_signed_p; // 有符号乘法标记
+//    assign inst_mult_p = (inst[31:26]==6'b0)&(inst[15:6]==10'b0)&(inst[5:0]==6'b01_1000);
+//    assign inst_multu_p = (inst[31:26]==6'b0)&(inst[15:6]==10'b0)&(inst[5:0]==6'b01_1001);
+//    assign mul_signed_p = inst_mult_p;
+    
+//    mul u_mul(
+//    	.clk        (clk            ),
+//        .resetn     (~rst           ),
+//        .mul_signed (mul_signed_p ),
+//        .ina        (alu_src1       ), // 乘法源操作数1
+//        .inb        (alu_src2       ), // 乘法源操作数2
+//        .result     (mul_result_p     ) // 乘法结果 64bit
+//    );
+    //乘法部分_自制乘法器
     wire [63:0] mul_result;
-    wire inst_mult;
-    wire inst_multu;
-    wire mul_signed; // 有符号乘法标记
+    wire inst_mult,inst_multu;
+    wire mul_ready_i;
+    reg stallreq_for_mul;
+    reg [31:0] mul_opdata1_o;
+    reg [31:0] mul_opdata2_o;
+    reg mul_start_o;
+    reg signed_mul_o;
     assign inst_mult = (inst[31:26]==6'b0)&(inst[15:6]==10'b0)&(inst[5:0]==6'b01_1000);
     assign inst_multu = (inst[31:26]==6'b0)&(inst[15:6]==10'b0)&(inst[5:0]==6'b01_1001);
-    assign mul_signed = inst_mult;
     
-    mul u_mul(
-    	.clk        (clk            ),
-        .resetn     (~rst           ),
-        .mul_signed (mul_signed     ),
-        .ina        (alu_src1       ), // 乘法源操作数1
-        .inb        (alu_src2       ), // 乘法源操作数2
-        .result     (mul_result     ) // 乘法结果 64bit
+    
+    mul_self u_mul_self(
+        .rst          (rst              ),
+        .clk          (clk              ),
+        .signed_mul_i (signed_mul_o     ),
+        .opdata1_i    (mul_opdata1_o    ),
+        .opdata2_i    (mul_opdata2_o    ),
+        .start_i      (mul_start_o      ),
+        .annul_i      (1'b0             ),
+        .result_o     (mul_result       ), // 除法结果 64bit
+        .ready_o      (mul_ready_i      )
     );
+    
+    always @ (*) begin
+        if (rst) begin
+            stallreq_for_mul = `NoStop;
+            mul_opdata1_o = `ZeroWord;
+            mul_opdata2_o = `ZeroWord;
+            mul_start_o = `MulStop;
+            signed_mul_o = 1'b0;
+        end
+        else begin
+            stallreq_for_mul = `NoStop;
+            mul_opdata1_o = `ZeroWord;
+            mul_opdata2_o = `ZeroWord;
+            mul_start_o = `MulStop;
+            signed_mul_o = 1'b0;
+            case ({inst_mult,inst_multu})
+                2'b10:begin
+                    if (mul_ready_i == `MulResultNotReady) begin
+                        mul_opdata1_o = alu_src1;
+                        mul_opdata2_o = alu_src2;
+                        mul_start_o = `MulStart;
+                        signed_mul_o = 1'b1;
+                        stallreq_for_mul = `Stop;
+                    end
+                    else if (mul_ready_i == `MulResultReady) begin
+                        mul_opdata1_o = alu_src1;
+                        mul_opdata2_o = alu_src2;
+                        mul_start_o = `MulStop;
+                        signed_mul_o = 1'b1;
+                        stallreq_for_mul = `NoStop;
+                    end
+                    else begin
+                        mul_opdata1_o = `ZeroWord;
+                        mul_opdata2_o = `ZeroWord;
+                        mul_start_o = `MulStop;
+                        signed_mul_o = 1'b0;
+                        stallreq_for_mul = `NoStop;
+                    end
+                end
+                2'b01:begin
+                    if (mul_ready_i == `MulResultNotReady) begin
+                        mul_opdata1_o = alu_src1;
+                        mul_opdata2_o = alu_src2;
+                        mul_start_o = `MulStart;
+                        signed_mul_o = 1'b0;
+                        stallreq_for_mul = `Stop;
+                    end
+                    else if (mul_ready_i == `MulResultReady) begin
+                        mul_opdata1_o = alu_src1;
+                        mul_opdata2_o = alu_src2;
+                        mul_start_o = `MulStop;
+                        signed_mul_o = 1'b0;
+                        stallreq_for_mul = `NoStop;
+                    end
+                    else begin
+                        mul_opdata1_o = `ZeroWord;
+                        mul_opdata2_o = `ZeroWord;
+                        mul_start_o = `MulStop;
+                        signed_mul_o = 1'b0;
+                        stallreq_for_mul = `NoStop;
+                    end
+                end
+                default:begin
+                end
+            endcase
+        end
+    end
+    
+    
+    
     
     
     //除法部分
@@ -182,7 +277,7 @@ module EX(
     reg [31:0] div_opdata2_o;
     reg div_start_o;
     reg signed_div_o;
-    assign stall_ex = stallreq_for_div;
+//    assign stall_ex = stallreq_for_div;
     assign inst_div=(inst[31:26]==6'b0)&(inst[15:6]==10'b0)&(inst[5:0]==6'b01_1010);
     assign inst_divu =(inst[31:26]==6'b0)&(inst[15:6]==10'b0)&(inst[5:0]==6'b01_1011);
     div u_div(
