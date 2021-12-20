@@ -224,6 +224,8 @@ module ID(
     wire inst_mfhi,inst_mflo,inst_mthi,inst_mtlo;
     // 乘除指令
     wire inst_mult,inst_multu,inst_div,inst_divu;
+    //new
+    wire inst_lsa;
     decoder_6_64 u0_decoder_6_64(
     	.in  (opcode  ),
         .out (op_d )//运算的独热编码，只有一位为1表明该条指令的运算类型为这一种
@@ -314,14 +316,16 @@ module ID(
     assign inst_multu   = op_d[6'b00_0000]&sa_d[5'b00000]&func_d[6'b01_1001];
     assign inst_div     = op_d[6'b00_0000]&sa_d[5'b00000]&func_d[6'b01_1010];
     assign inst_divu    = op_d[6'b00_0000]&sa_d[5'b00000]&func_d[6'b01_1011];
-    
+    //new
+    assign inst_lsa     = op_d[6'b01_1100]&func_d[6'b11_0111];
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori|inst_addiu|inst_add|inst_addu|inst_addi|inst_sllv|inst_srav|inst_srlv
                              |inst_sub|inst_subu|inst_slt|inst_sltu|inst_slti|inst_sltiu
                              |inst_and|inst_andi|inst_nor|inst_or|inst_xor|inst_xori
                              |inst_lw|inst_lb|inst_lbu|inst_lh|inst_lhu|inst_sb|inst_sh|inst_sw
                              |inst_mthi|inst_mtlo
-                             |inst_mult|inst_multu|inst_div|inst_divu;//rs的值作src1
+                             |inst_mult|inst_multu|inst_div|inst_divu
+                             |inst_lsa;//rs的值作src1
     
     // pc to reg1
     assign sel_alu_src1[1] = 1'b0|inst_bgezal|inst_bltzal|inst_jal|inst_jalr;//src1为pc值
@@ -332,7 +336,8 @@ module ID(
     // rt to reg2
     assign sel_alu_src2[0] = 1'b0|inst_sub|inst_subu|inst_slt|inst_sltu|inst_and|inst_srav|inst_srlv
                                   |inst_nor|inst_or|inst_xor|inst_sll|inst_srl|inst_sra|inst_addu|inst_add|inst_sllv
-                                  |inst_mult|inst_multu|inst_div|inst_divu;//rt作src2
+                                  |inst_mult|inst_multu|inst_div|inst_divu
+                                  |inst_lsa;//rt作src2
     
     // imm_sign_extend to reg2
     assign sel_alu_src2[1] = 1'b0|inst_lui|inst_addiu|inst_lw|inst_lb|inst_lbu|inst_lh|inst_lhu|inst_sb|inst_sh|inst_sw|inst_slti|inst_sltiu|inst_addi;//有符号扩展数作src2
@@ -348,7 +353,8 @@ module ID(
     assign op_add = inst_addiu|inst_addu|inst_add|inst_addi
                               |inst_lw|inst_lb|inst_lbu|inst_lh|inst_lhu|inst_sb|inst_sh|inst_sw
                               |inst_bgezal|inst_bltzal|inst_jal|inst_jalr
-                              |inst_mthi|inst_mtlo;
+                              |inst_mthi|inst_mtlo
+                              |inst_lsa;
     assign op_sub = inst_sub |inst_subu;
     assign op_slt = inst_slt|inst_slti;
     assign op_sltu = inst_sltu|inst_sltiu;
@@ -384,7 +390,8 @@ module ID(
                              |inst_slt|inst_slti|inst_sltiu|inst_sltu|inst_sll|inst_srl|inst_sra
                              |inst_bgezal|inst_bltzal|inst_jal|inst_jalr
                              |inst_lw|inst_lb|inst_lbu|inst_lh|inst_lhu
-                             |inst_mfhi|inst_mflo;
+                             |inst_mfhi|inst_mflo
+                             |inst_lsa;
 
     assign hl_we = inst_mthi|inst_mtlo
                    |inst_mult|inst_multu|inst_div|inst_divu;//结果是不是在hilo寄存器上写
@@ -393,7 +400,8 @@ module ID(
     // store in [rd]
     assign sel_rf_dst[0] = 1'b0|inst_sub|inst_subu|inst_addu|inst_and|inst_sllv|inst_srav|inst_srlv
                                |inst_nor|inst_or|inst_xor|inst_slt|inst_sltu|inst_sll|inst_srl|inst_sra|inst_add|inst_jalr
-                               |inst_mfhi|inst_mflo;
+                               |inst_mfhi|inst_mflo
+                               |inst_lsa;
     // store in [rt] 
     assign sel_rf_dst[1] = inst_ori|inst_lui|inst_addiu|inst_lw|inst_lb|inst_lbu|inst_lh|inst_lhu|inst_slti|inst_sltiu|inst_sltiu|inst_addi|inst_andi|inst_xori;
     // store in [31]
@@ -410,7 +418,7 @@ module ID(
     
     // 0 from alu_res ; 1 from ld_res
     assign sel_rf_res = 1'b0|inst_lw|inst_lb|inst_lbu|inst_lh|inst_lhu; //选择存储寄存器中的值的来源
- 
+    
  
  
  

@@ -86,7 +86,11 @@ module EX(
         rf_rdata1,      // 63:32
         rf_rdata2       // 31:0
     } = ex_stop?id_to_ex_bus_rr:id_to_ex_bus_r;
-
+    
+    wire is_lsa;
+    wire [2:0] lsa_sa;
+    assign is_lsa= (inst[31:26]==6'b01_1100)&&(inst[5:0]==6'b11_0111);
+    assign lsa_sa = {1'b0,inst[7:6]}+3'b001;
     wire [31:0] imm_sign_extend, imm_zero_extend, sa_zero_extend;
     assign imm_sign_extend = {{16{inst[15]}},inst[15:0]};//对立即数做有符号扩展
     assign imm_zero_extend = {16'b0, inst[15:0]};//对立即数做无符号扩展
@@ -101,7 +105,8 @@ module EX(
     wire [31:0] alu_result, ex_result;
     
     assign alu_src1 =sel_alu_src1[1] ? ex_pc :
-                      sel_alu_src1[2] ? sa_zero_extend : rf_rdata1;
+                      sel_alu_src1[2] ? sa_zero_extend : 
+                      is_lsa          ?(rf_rdata1<<lsa_sa):rf_rdata1;
     
     assign alu_src2 =sel_alu_src2[0] ? rf_rdata2:
                       sel_alu_src2[1] ? imm_sign_extend :
